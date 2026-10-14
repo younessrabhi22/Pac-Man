@@ -1,0 +1,21 @@
+# Main game configuration for Pac-Man
+{
+    "highscore_filename": "highscore.json",
+
+    # Level configuration: array of multiple levels with width and height
+    "level": [
+        {"width": 28, "height": 31},
+        {"width": 30, "height": 35}
+    ],
+
+    # Player and game settings
+    "lives": 3,
+    "seed": 42,
+    "level_max_time": 90,
+
+    // Scoring and entities 
+    "pacgum": 42,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200
+}
