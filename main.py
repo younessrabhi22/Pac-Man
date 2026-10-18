@@ -1,9 +1,7 @@
 import sys
 import json
 from typing import Dict
-from game.config_loader import data_parsing
-
-
+from game.config_loader import DataParsing
 
 
 
@@ -16,7 +14,7 @@ if __name__   == "__main__":
 
 
     default_param["highscore_filename"] = "highscore.json"
-    default_param["level"] =  [{"width": 28, "height": 31}]
+    default_param["level"] =  [{"width": 40, "height": 40}]
     default_param["lives"] = 20
     default_param["pacgum"] = 42
     default_param["points_per_pacgum"] = 10
@@ -45,9 +43,6 @@ if __name__   == "__main__":
     except json.JSONDecodeError:
         print("invalid json")
 
-    parser = data_parsing()
+    parser = DataParsing()
 
-    if not input_json:
-        parser.load_json(default_param)
-    else:
-        parser.load_json(input_json)
+    print(parser.parse_level(input_json, default_param))
