@@ -25,24 +25,31 @@ if __name__   == "__main__":
 
 
     if len(sys.argv) != 2:
-        print("invalid argements number!")
+        print("\n[Config] Error: Invalid argument number!"
+        f"Usage: python3 pac-man.py config.json")
         exit(1)
 
     try:
         with open(sys.argv[1], "r") as file:
-
             for line in file.readlines():
                 if line.strip().startswith("#") or line.strip().startswith("//"):
                     continue
                 data += line
-    except FileNotFoundError:
-        print("file not found")
 
-    try:
-        input_json = json.loads(data)
+        if data.strip():
+            input_json = json.loads(data)
+
+    except FileNotFoundError:
+        print("\n[Config] Warning: Configuration file not found."
+        f" Loading safe default parameters.")
     except json.JSONDecodeError:
-        print("invalid json")
+        print("\n[Config] Warning: Invalid JSON format."
+        f"Loading safe default parameters.")
+
 
     parser = DataParsing()
 
-    print(parser.parse_level(input_json, default_param))
+    if not input_json:
+        parser.parse_level(input_json=default_param, default_para=default_param)
+    else:
+        parser.parse_level(input_json=input_json, default_para=default_param)

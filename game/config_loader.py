@@ -44,3 +44,14 @@ class DataParsing:
                   f"using {DEFAULT_SIZE}")
             return DEFAULT_SIZE
         return value
+
+    def parse_int(self, input_json: Dict[str, Any], default_para: Dict[str, Any],
+              key: str, min_val: int, max_val: int) -> int:
+        """Validate one integer parameter, or return its default."""
+        default = default_para[key]
+        value = input_json.get(key)
+        if (isinstance(value, bool) or not isinstance(value, int)
+                or not min_val <= value <= max_val):
+            print(f"[config] '{key}' missing or invalid, using {default}")
+            return default
+        return value
