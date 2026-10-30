@@ -2,6 +2,8 @@ import sys
 import json
 from typing import Dict
 from game.config_loader import DataParsing
+import pygame
+
 
 
 
@@ -46,3 +48,6 @@ if __name__   == "__main__":
     parser = DataParsing()
 
     print(parser.parse_level(input_json, default_param))
+
+# game Start here with the main loop and event handling and rendering
+
