@@ -1,7 +1,7 @@
 import sys
 import json
 from typing import Dict
-from game.config_loader import DataParsing
+from game.config_loader import DataParsing, MAX_SIZE, MIN_SIZE
 
 
 
@@ -48,8 +48,7 @@ if __name__   == "__main__":
 
 
     parser = DataParsing()
+    input_json = parser.parse_config(input_json, default_param)
 
-    parser.parse_level(input_json=input_json, default_para=default_param)
-
-    #level test
-    print(input_json["level"])
+    #the final param print test
+    print(input_json)
