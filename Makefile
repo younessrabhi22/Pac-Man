@@ -3,7 +3,7 @@ install:
 
 
 run:
-	uv run -m pacman.main pacman/confic_loader.json
+	uv run -m pacman.main pacman/config.json
 
 
 

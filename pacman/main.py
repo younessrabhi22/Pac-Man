@@ -49,7 +49,7 @@ if __name__   == "__main__":
 
     parser = DataParsing()
 
-    if not input_json:
-        parser.parse_level(input_json=default_param, default_para=default_param)
-    else:
-        parser.parse_level(input_json=input_json, default_para=default_param)
+    parser.parse_level(input_json=input_json, default_para=default_param)
+
+    #level test
+    print(input_json["level"])
