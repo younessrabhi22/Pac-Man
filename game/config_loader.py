@@ -9,6 +9,27 @@ MAX_SIZE = 100
 
 class DataParsing:
 
+
+
+    def parse_config(self, input_json: Dict[str, Any], default_para: Dict[str, Any]) -> Dict[str, Any]:
+
+        validated_levels = self.parse_level(input_json, default_para)
+
+        clean_config = {
+            "highscore_filename": input_json.get("highscore_filename", default_para["highscore_filename"]),
+            "level": validated_levels,
+
+            "lives": self.parse_int(input_json, default_para, "lives", 1, 10),
+            "pacgum": self.parse_int(input_json, default_para, "pacgum", 10, 100),
+            "points_per_pacgum": self.parse_int(input_json, default_para, "points_per_pacgum", 1, 100),
+            "points_per_super_pacgum": self.parse_int(input_json, default_para, "points_per_super_pacgum", 10, 500),
+            "points_per_ghost": self.parse_int(input_json, default_para, "points_per_ghost", 50, 1000),
+            "seed": self.parse_int(input_json, default_para, "seed", 0, 99999),
+            "level_max_time": self.parse_int(input_json, default_para, "level_max_time", 30, 300)
+        }
+        return clean_config
+
+
     def parse_level(self, input_json: Dict, default_para: Dict) -> List:
 
         levels = input_json.get("level")
@@ -23,6 +44,7 @@ class DataParsing:
             if not isinstance(item, dict):
                 print(f"[config] level {index} is not an object, skipped")
                 continue
+
             result.append({
                 "width": self.parse_dimension(item, "width", index),
                 "height": self.parse_dimension(item, "height", index),
@@ -45,13 +67,13 @@ class DataParsing:
             return DEFAULT_SIZE
         return value
 
-    # def parse_int(self, input_json: Dict[str, Any], default_para: Dict[str, Any],
-    #           key: str, min_val: int, max_val: int) -> int:
-    #     """Validate one integer parameter, or return its default."""
-    #     default = default_para[key]
-    #     value = input_json.get(key)
-    #     if (isinstance(value, bool) or not isinstance(value, int)
-    #             or not min_val <= value <= max_val):
-    #         print(f"[config] '{key}' missing or invalid, using {default}")
-    #         return default
-    #     return value
+    def parse_int(self, input_json: Dict[str, Any], default_para: Dict[str, Any],
+              key: str, min_val: int, max_val: int) -> int:
+        """Validate one integer parameter, or return its default."""
+        default = default_para[key]
+        value = input_json.get(key)
+        if (isinstance(value, bool) or not isinstance(value, int)
+                or not min_val <= value <= max_val):
+            print(f"[config] '{key}' missing or invalid, using {default}")
+            return default
+        return value
