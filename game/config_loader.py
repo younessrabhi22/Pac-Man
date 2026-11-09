@@ -9,14 +9,12 @@ MAX_SIZE = 100
 
 class DataParsing:
 
-
-
     def parse_config(self, input_json: Dict[str, Any], default_para: Dict[str, Any]) -> Dict[str, Any]:
 
         validated_levels = self.parse_level(input_json, default_para)
 
         clean_config = {
-            "highscore_filename": input_json.get("highscore_filename", default_para["highscore_filename"]),
+            "highscore_filename": self.parse_string(input_json, default_para, "highscore_filename"),
             "level": validated_levels,
 
             "lives": self.parse_int(input_json, default_para, "lives", 1, 10),
@@ -25,7 +23,7 @@ class DataParsing:
             "points_per_super_pacgum": self.parse_int(input_json, default_para, "points_per_super_pacgum", 10, 500),
             "points_per_ghost": self.parse_int(input_json, default_para, "points_per_ghost", 50, 1000),
             "seed": self.parse_int(input_json, default_para, "seed", 0, 99999),
-            "level_max_time": self.parse_int(input_json, default_para, "level_max_time", 30, 300)
+            "level_max_time": self.parse_int(input_json, default_para, "level_max_time", 30, 600)
         }
         return clean_config
 
@@ -76,4 +74,15 @@ class DataParsing:
                 or not min_val <= value <= max_val):
             print(f"[config] '{key}' missing or invalid, using {default}")
             return default
+        return value
+
+    def parse_string(self, input_json: Dict[str, Any], default_para: Dict[str, Any], key: str) -> str:
+        """Validate one string parameter, ensuring it is a non-empty string."""
+        default = default_para[key]
+        value = input_json.get(key)
+
+        if not isinstance(value, str) or not value.strip():
+            print(f"[config] '{key}' missing or invalid, using '{default}'")
+            return default
+
         return value
