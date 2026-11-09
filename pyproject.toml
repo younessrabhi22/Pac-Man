@@ -5,3 +5,8 @@ description = "Pac-Man game in Python"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "matplotlib>=3.10.9",
+]
