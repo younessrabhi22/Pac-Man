@@ -114,7 +114,7 @@ def draw_menu(screen, buttons):
     title = "PAC-MAN"
     scale = 12
     x = (WIDTH - text_width(title, scale)) // 2
-    draw_text(screen, x, 70, title, (255, 255, 255), scale)
+    draw_text(screen, x, 70, title, (254, 229, 0), scale)
 
     for button in buttons:
         button.draw(screen)
