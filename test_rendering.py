@@ -12,7 +12,9 @@ HEIGHT = 900
 # ---------------------------------------------------------------------------
 # Font loading (font.json lives next to this file)
 # ---------------------------------------------------------------------------
-FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "font.json")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FONT_PATH = os.path.join(BASE_DIR, "font.json")
+IMAGES_DIR = os.path.join(BASE_DIR, "images")
 
 
 def load_font(path):
@@ -110,11 +112,108 @@ def draw_text(screen, x, y, text, color, scale=3):
         cursor_x += (len(bitmap[0]) + LETTER_SPACING) * scale
 
 
+# ---------------------------------------------------------------------------
+# Image helpers: only things that exist in MiniLibX
+#
+#   put_pixel    ->  mlx_pixel_put (or writing into the mlx_get_data_addr buffer)
+#   load_image   ->  mlx_xpm_file_to_image + mlx_get_data_addr (read the pixels)
+#   draw_image   ->  a double loop over the image, writing each pixel
+# ---------------------------------------------------------------------------
+def put_pixel(screen, x, y, color):
+    """Same bounds check you must do yourself in C before writing a pixel."""
+    if 0 <= x < WIDTH and 0 <= y < HEIGHT:
+        screen.set_at((x, y), color)
+
+
+def load_image(path):
+    """PNG file -> plain 2D list of (r, g, b, a). Done ONCE, never per frame."""
+    surf = pygame.image.load(path)
+    w, h = surf.get_size()
+    pixels = [[tuple(surf.get_at((x, y))) for x in range(w)] for y in range(h)]
+    return {"w": w, "h": h, "pixels": pixels}
+
+
+def scale_image(img, new_w, new_h):
+    """Nearest-neighbour resize (no smoothscale in MiniLibX)."""
+    pixels = []
+    for y in range(new_h):
+        src_row = img["pixels"][y * img["h"] // new_h]
+        pixels.append([src_row[x * img["w"] // new_w] for x in range(new_w)])
+    return {"w": new_w, "h": new_h, "pixels": pixels}
+
+
+def flip_image(img):
+    """Mirror left <-> right (for a Pac-Man going the other way)."""
+    return {"w": img["w"], "h": img["h"], "pixels": [row[::-1] for row in img["pixels"]]}
+
+
+def bake_image(img, brightness=100, alpha_threshold=128):
+    """Keep only the visible pixels, as (x, y, (r, g, b)).
+
+    XPM/MLX transparency is all-or-nothing, so a pixel is either drawn or
+    skipped. brightness < 100 darkens the sprite (good for a background).
+    """
+    img["visible"] = [
+        (x, y, (r * brightness // 100, g * brightness // 100, b * brightness // 100))
+        for y, row in enumerate(img["pixels"])
+        for x, (r, g, b, a) in enumerate(row)
+        if a >= alpha_threshold
+    ]
+    return img
+
+
+def draw_image(screen, img, x, y):
+    for px, py, color in img["visible"]:
+        put_pixel(screen, x + px, y + py, color)
+
+
+# ---------------------------------------------------------------------------
+# Pac-Men drifting across the menu background
+# ---------------------------------------------------------------------------
+def build_pacman_frames(size, brightness=60):
+    """Returns {1: [frames facing right], -1: [frames facing left]}."""
+    names = ("pacman_open.png", "pacman_closed.png")
+    base = [load_image(os.path.join(IMAGES_DIR, n)) for n in names]
+    right = [bake_image(scale_image(img, size, size), brightness) for img in base]
+    left = [bake_image(flip_image(img), brightness) for img in right]
+    return {1: right, -1: left}
+
+
+class BackgroundPacman:
+    def __init__(self, x, y, speed, frames):
+        self.x = x
+        self.y = y
+        self.speed = speed
+        self.frames = frames[1 if speed > 0 else -1]
+        self.w = self.frames[0]["w"]
+
+    def update(self):
+        self.x += self.speed
+        if self.speed > 0 and self.x > WIDTH:
+            self.x = -self.w
+        elif self.speed < 0 and self.x < -self.w:
+            self.x = WIDTH
+
+    def draw(self, screen, tick):
+        frame = self.frames[(tick // 8) % len(self.frames)]   # mouth open / closed
+        draw_image(screen, frame, self.x, self.y)
+
+
+def make_background_pacmans(frames, count=10):
+    pacmans = []
+    for i in range(count):
+        y = 30 + i * (HEIGHT - 120) // count
+        speed = (1 + i % 3) * (1 if i % 2 == 0 else -1)
+        x = (i * 337) % WIDTH
+        pacmans.append(BackgroundPacman(x, y, speed, frames))
+    return pacmans
+
+
 def draw_menu(screen, buttons):
     title = "PAC-MAN"
     scale = 12
     x = (WIDTH - text_width(title, scale)) // 2
-    draw_text(screen, x, 70, title, (254, 229, 0), scale)
+    draw_text(screen, x, 70, title, (254, 229, 20), scale)
 
     for button in buttons:
         button.draw(screen)
@@ -188,6 +287,10 @@ if __name__ == "__main__":
     buttons = [play_button, scores_button, instructions_button, exit_button]
     current_page = "menu"
 
+    pacman_frames = build_pacman_frames(64)
+    pacmans = make_background_pacmans(pacman_frames)
+    tick = 0
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -196,9 +299,13 @@ if __name__ == "__main__":
                 for button in buttons:
                     button.handle_click(*event.pos)
 
-        screen.fill((25, 25, 166))
+        screen.fill((0,0,60))
         if current_page == "menu":
+            for pm in pacmans:          # background first, UI on top
+                pm.update()
+                pm.draw(screen, tick)
             draw_menu(screen, buttons)
+        tick += 1
 
         pygame.display.flip()
 
