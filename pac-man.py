@@ -2,7 +2,7 @@ import sys
 import json
 from typing import Dict
 from game.config_loader import DataParsing
-import pygame
+
 
 
 
@@ -51,48 +51,50 @@ if __name__   == "__main__":
     input_json = parser.parse_config(input_json, default_param)
 
 
-    #game loop
-    pygame.init()
 
-    WIDTH = 800
-    HEIGHT = 600
-    FPS = 60
+####################################################################################################################
+    #game loop
+    from graphics.movement import build_pacman_frames, make_background_pacmans, draw_menu
+    import pygame
+    from graphics.constants import WIDTH, HEIGHT, BUTTONS
+
+
+    pygame.init()
+    FPS=60
+    pacman_frames = build_pacman_frames(64)  #build_pac_game add it to graphics
+
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pac-Man")
 
     clock = pygame.time.Clock()
 
-    running = True
 
-    current_screen = "menu"
+    pacmans = make_background_pacmans(pacman_frames, 10)
+
+    running = True
+    current_page = "menu"
+    tick = 0
 
     while running:
-
-        # 1. HANDLE EVENTS
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for button in BUTTONS:
+                    button.handle_click(*event.pos)
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-
-        # 2. UPDATE GAME LOGIC
-        # update_game()
-
-        # 3. RENDER GRAPHICS
-        screen.fill((0, 0, 0))
-
-        # draw_maze()
-        # draw_pacman()
-        # draw_ghosts()
-        # draw_score()
+        screen.fill((0,0,60))
+        if current_page == "menu":
+            for pm in pacmans:          # background first, UI on top
+                pm.update()
+                pm.draw(screen, tick)
+            draw_menu(screen, BUTTONS)
+        tick += 1
 
         pygame.display.flip()
 
-        # 4. CONTROL FPS
-        clock.tick(FPS)
+
 
     pygame.quit()
     sys.exit()
