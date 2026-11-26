@@ -72,20 +72,21 @@ if __name__   == "__main__":
 
     pacmans = make_background_pacmans(pacman_frames, 10)
 
-    running = True
-    current_page = "menu"
+    state = {"running" : True,
+            "current_page" : "menu"
+             }
     tick = 0
 
-    while running:
+    while state["running"]:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                RUNNING = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for button in BUTTONS:
-                    button.handle_click(*event.pos)
+                    state=button.handle_click(*event.pos)
 
         screen.fill((0,0,60))
-        if current_page == "menu":
+        if state["current_page"] == "menu":
             for pm in pacmans:          # background first, UI on top
                 pm.update()
                 pm.draw(screen, tick)
@@ -95,7 +96,18 @@ if __name__   == "__main__":
         pygame.display.flip()
 
 
-
     pygame.quit()
     sys.exit()
 
+
+    #-------- ---- ----  ----  ----   ----   ---
+    #self, size: tuple[int, int] = (15, 15), perfect: bool = False,
+                 # entry_cell: tuple[int, int] = (0, 0),
+                 # exit_cell: tuple[int, int] = (-1, -1),
+                 # seed: int = 0) -> None:
+    #maze is : list[list[int]]
+
+
+    from maze import mazegenerator
+    maze_gen = mazegenerator.MazeGenerator()
+    print(maze_gen.maze)
