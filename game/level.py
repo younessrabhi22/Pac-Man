@@ -9,6 +9,8 @@ from maze.maze_loader import load_maze
 Cell = Tuple[int, int]
 
 
+
+
 class Level:
     """Static layout of a level: maze, spawn cells and pellets."""
 

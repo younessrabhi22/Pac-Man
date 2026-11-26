@@ -4,8 +4,6 @@ from typing import Dict
 from game.config_loader import DataParsing
 
 
-
-
 if __name__   == "__main__":
 
     default_param: Dict = {}
@@ -49,7 +47,7 @@ if __name__   == "__main__":
 
     parser = DataParsing()
     input_json = parser.parse_config(input_json, default_param)
-
+    print(input_json)
 
 
 ####################################################################################################################
@@ -83,7 +81,7 @@ if __name__   == "__main__":
                 state["running"] = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for button in BUTTONS:
-                    state["running"]=button.handle_click(*event.pos)
+                    state["running"]=button.handle_click(*event.pos, input_json, screen)
 
         screen.fill((0,0,60))
         if state["current_page"] == "menu":
@@ -96,5 +94,3 @@ if __name__   == "__main__":
 
     pygame.quit()
     sys.exit()
-
-

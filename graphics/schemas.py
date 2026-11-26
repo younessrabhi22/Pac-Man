@@ -30,8 +30,8 @@ class Button:
             and self.y <= mouse_y <= self.y + self.height
         )
 
-    def handle_click(self, mouse_x, mouse_y):
+    def handle_click(self, mouse_x, mouse_y, input_json, screen):
         if self.contains(mouse_x, mouse_y):
-            return self.callback()
+            return self.callback(input_json, screen)
         return True
 
