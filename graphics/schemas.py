@@ -33,3 +33,5 @@ class Button:
     def handle_click(self, mouse_x, mouse_y):
         if self.contains(mouse_x, mouse_y):
             return self.callback()
+        return True
+
