@@ -76,3 +76,67 @@ def draw_text(screen, x, y, text, color, scale=3):
                     col += 1
 
         cursor_x += (len(bitmap[0]) + LETTER_SPACING) * scale
+
+
+def _draw_centered_text(screen, text, y, font, color=(255, 255, 255)):
+    """Draw text horizontally centered on the screen."""
+    surface = font.render(str(text), True, color)
+    rect = surface.get_rect(center=(screen.get_width() // 2, y))
+    screen.blit(surface, rect)
+
+
+def _load_scores(input_json):
+    """Load and sort saved high scores."""
+    filename = input_json.get("highscore_filename", "highscore.json")
+
+    if not os.path.exists(filename):
+        return []
+
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        if isinstance(data, dict):
+            data = data.get("scores", data.get("high_scores", []))
+
+        if not isinstance(data, list):
+            return []
+
+        scores = []
+
+        for entry in data:
+            if not isinstance(entry, dict):
+                continue
+
+            try:
+                scores.append({
+                    "name": str(entry.get("name", "PLAYER"))[:10],
+                    "score": int(entry.get("score", 0))
+                })
+            except (ValueError, TypeError):
+                continue
+
+        return sorted(scores, key=lambda item: item["score"], reverse=True)
+
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def _menu_screen_events():
+    """
+    Handle events for secondary menu screens.
+
+    Returns False when the application should quit.
+    """
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_ESCAPE, pygame.K_RETURN):
+                return True
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            return True
+
+    return None

@@ -67,50 +67,119 @@ if __name__   == "__main__":
 
 ####################################################################################################################
     #game loop
-    from graphics.movement import build_pacman_frames, make_background_pacmans, draw_menu
+
+    # ---------------------------------------------------------
+    # APPLICATION / MENU
+    # ---------------------------------------------------------
     import pygame
+    from graphics.movement import (
+        build_pacman_frames,
+        make_background_pacmans,
+        draw_menu
+    )
     from graphics.constants import WIDTH, HEIGHT, BUTTONS
+    from enum import Enum, auto
+    from graphics.game_sections import _new_game_state , GameView, GamePhase, handle_game_event, BACKGROUND
 
-    game_state = GameState(input_json)
+    class AppScreen(Enum):
+        MENU = auto()
+        GAME = auto()
+        SCORES = auto()
+        INSTRUCTIONS = auto()
+
     pygame.init()
-    FPS=60
-    pacman_frames = build_pacman_frames(64)  #build_pac_game add it to graphics
 
+    FPS = 60
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pac-Man")
 
     clock = pygame.time.Clock()
 
-
+    pacman_frames = build_pacman_frames(64)
     pacmans = make_background_pacmans(pacman_frames, 10)
 
-    state = {"running" : True,
-            "current_page" : "menu"
-             }
+    running = True
     tick = 0
 
-    while state["running"]:
+    current_screen = AppScreen.MENU
+
+    while running:
+
+        delta_time = clock.tick(FPS) / 1000.0
+
+        # 1. EVENTS
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
-                state["running"] = False
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for button in BUTTONS:
-                    state["running"]=button.handle_click(*event.pos, input_json, screen, game_state)
-            arrow_direction = get_arrow_direction(event)
-            if arrow_direction:
-                update_game_state(game_state, arrow_direction)
+                running = False
+                break
 
-        
+            if current_screen == AppScreen.GAME:
+                running = handle_game_event(event, game_state)
 
-        screen.fill((0,0,60))
-        if state["current_page"] == "menu":
-            for pm in pacmans:          # background first, UI on top
-                pm.update()
-                pm.draw(screen, tick)
+                if not running:
+                    current_screen = AppScreen.MENU
+                    running = True
+
+            elif current_screen == AppScreen.MENU:
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+
+                    for button in BUTTONS:
+                        if button.contains(*event.pos):
+
+                            if button.text == "Start":
+                                game_state = _new_game_state(input_json)
+                                game_view = GameView(game_state)
+                                current_screen = AppScreen.GAME
+
+                            elif button.text == "High Scores":
+                                current_screen = AppScreen.SCORES
+
+                            elif button.text == "Instructions":
+                                current_screen = AppScreen.INSTRUCTIONS
+
+                            elif button.text == "Exit":
+                                running = False
+
+                            break
+
+            elif current_screen in (AppScreen.SCORES, AppScreen.INSTRUCTIONS):
+                if event.type == pygame.KEYDOWN:
+                    if event.key in (pygame.K_ESCAPE, pygame.K_RETURN):
+                        current_screen = AppScreen.MENU
+
+        if not running:
+            break
+
+        # 2. UPDATE
+        if current_screen == AppScreen.GAME:
+            if game_state.phase == GamePhase.PLAYING:
+                game_view.begin_step(game_state)
+                game_state.update(delta_time)
+
+        # 3. DRAW
+        if current_screen == AppScreen.GAME:
+            screen.fill(BACKGROUND)
+            game_view.draw(screen, game_state, tick, 1.0)
+
+        elif current_screen == AppScreen.MENU:
+            screen.fill((0, 0, 60))
+
+            for pacman in pacmans:
+                pacman.update()
+                pacman.draw(screen, tick)
+
             draw_menu(screen, BUTTONS)
-        tick += 1
+
+        elif current_screen == AppScreen.SCORES:
+            draw_scores_screen(screen, input_json)
+
+        elif current_screen == AppScreen.INSTRUCTIONS:
+            draw_instructions_screen(screen)
+
         pygame.display.flip()
+        tick += 1
 
     pygame.quit()
     sys.exit()

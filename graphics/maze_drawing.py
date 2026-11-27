@@ -32,10 +32,11 @@ class MazeView:
         """Top-left screen pixel of cell (cx, cy) (for player / ghosts)."""
         return self.x + cx * self.cell, self.y + cy * self.cell
 
-    def cell_center(self, cx: int, cy: int) -> Tuple[int, int]:
-        """Centre screen pixel of cell (cx, cy)."""
+    def cell_center (self, cx: int, cy: int) -> Tuple[int, int]:
+        """Centre of the free space of cell (cx, cy)."""
         px, py = self.cell_to_screen(cx, cy)
-        return px + self.cell // 2, py + self.cell // 2
+        half = (self.cell + self.wall) // 2
+        return px + half, py + half
 
 
 # --- image buffer primitives (what you'd write on a mlx image) -------------

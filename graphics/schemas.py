@@ -35,4 +35,3 @@ class Button:
             return self.callback(input_json, screen)
         return True
 
-class Player

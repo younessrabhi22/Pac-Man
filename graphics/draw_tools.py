@@ -37,6 +37,14 @@ def bake_image(img, brightness=100, alpha_threshold=128):
     return img
 
 
+def blit_buffer(screen, image, x, y):
+    """Copy one ImageBuffer into another."""
+    for py in range(image.height):
+        for px in range(image.width):
+            color = image.get_at((px, py))
+            put_pixel(screen, x + px, y + py, color)
+
+
 def draw_image(screen, img, x, y):
     for px, py, color in img["visible"]:
         put_pixel(screen, x + px, y + py, color)
@@ -68,4 +76,5 @@ def draw_rounded_rect(screen, x, y, width, height, color, radius=20):
         else:
             inset = 0
 
-        screen.fill(color, (x + inset, y + i, width - 2 * inset, 1))
+        for px in range(x + inset, x + width - inset):
+            put_pixel(screen, px, y + i, color)
