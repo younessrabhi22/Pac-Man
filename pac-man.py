@@ -4,6 +4,21 @@ from typing import Dict
 from game.config_loader import DataParsing
 
 
+
+def get_arrow_direction(event):
+
+    if event.type != pygame.KEYDOWN:
+        return None
+
+    directions = {
+        pygame.K_UP: "UP",
+        pygame.K_DOWN: "DOWN",
+        pygame.K_LEFT: "LEFT",
+        pygame.K_RIGHT: "RIGHT",
+    }
+
+    return directions.get(event.key)
+
 if __name__   == "__main__":
 
     default_param: Dict = {}
@@ -56,7 +71,7 @@ if __name__   == "__main__":
     import pygame
     from graphics.constants import WIDTH, HEIGHT, BUTTONS
 
-
+    game_state = GameState(input_json)
     pygame.init()
     FPS=60
     pacman_frames = build_pacman_frames(64)  #build_pac_game add it to graphics
@@ -81,7 +96,12 @@ if __name__   == "__main__":
                 state["running"] = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for button in BUTTONS:
-                    state["running"]=button.handle_click(*event.pos, input_json, screen)
+                    state["running"]=button.handle_click(*event.pos, input_json, screen, game_state)
+            arrow_direction = get_arrow_direction(event)
+            if arrow_direction:
+                update_game_state(game_state, arrow_direction)
+
+        
 
         screen.fill((0,0,60))
         if state["current_page"] == "menu":

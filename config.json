@@ -6,9 +6,8 @@
 
     "level": [
         {
-            "width": 90,
-            "height": 50,
-            "ss": 90
+            "width": 20,
+            "height": 14
         },
         {
             "width": 30,

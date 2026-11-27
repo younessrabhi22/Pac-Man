@@ -32,6 +32,7 @@ def initialize_levels(config: Dict[str, Any]) -> List[Level]:
 
 
 def start_game(input_json, screen):
+    player_renderer
     print("Starting game!")
     levels = initialize_levels(input_json)
     maze_view = build_maze_view(levels[0].maze, top_margin=80)
